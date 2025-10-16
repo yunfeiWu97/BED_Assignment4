@@ -4,35 +4,47 @@ import { AuthorizationError } from "../errors/errors";
 
 /**
  * Role-based authorization middleware.
- * Usage: authorize({ hasRole: ["manager"], allowSameUser: true })
+ *
+ * Behavior:
+ * - If `allowSameUser` is true and `:id` equals `response.locals.uid`, the request is allowed.
+ * - If `hasRole` is omitted or empty, any authenticated user is allowed.
+ * - Otherwise, the current user's role must be included in `hasRole`.
+ *
+ * @param authorizationOptions - Allowed roles and whether to allow the same user to access their own resource.
+ * @returns Express middleware function.
  */
-const authorize = (authOptions: AuthorizationOptions) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+const authorize = (authorizationOptions: AuthorizationOptions) => {
+  return (request: Request, response: Response, nextFunction: NextFunction): void => {
     try {
-      const role: Role | undefined = res.locals.role;
-      const uid: string | undefined = res.locals.uid;
-      const { id } = req.params;
+      const currentUserRole: Role | undefined = response.locals.role;
+      const currentUserId: string | undefined = response.locals.uid;
+      const { id: resourceOwnerId } = request.params;
 
-      // 1) allowSameUser: if true and :id 
-      if (authOptions.allowSameUser && id && uid && id === uid) {
-        return next();
+      // 1) Same-user access
+      if (
+        authorizationOptions.allowSameUser &&
+        resourceOwnerId &&
+        currentUserId &&
+        resourceOwnerId === currentUserId
+      ) {
+        return nextFunction();
       }
-      
-      // 2) no role => forbidden
-      if (!role) {
+
+      // 2) Missing role → forbidden
+      if (!currentUserRole) {
         throw new AuthorizationError("Forbidden: No role found", "ROLE_NOT_FOUND");
       }
-      
-      // 3) if hasRole is not provided, any authenticated user is considered
-      const allowed = authOptions.hasRole;
-      if (!allowed || allowed.length === 0 || allowed.includes(role)) {
-        return next();
+
+      // 3) No hasRole provided → any authenticated user
+      const allowedRoles: Role[] | undefined = authorizationOptions.hasRole;
+      if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(currentUserRole)) {
+        return nextFunction();
       }
-      
-      // 4) insufficient role
+
+      // 4) Insufficient role
       throw new AuthorizationError("Forbidden: Insufficient role", "INSUFFICIENT_ROLE");
-    } catch (error) {
-      next(error); 
+    } catch (unknownError: unknown) {
+      nextFunction(unknownError);
     }
   };
 };

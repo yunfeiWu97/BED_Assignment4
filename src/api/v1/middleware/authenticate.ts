@@ -5,10 +5,16 @@ import { AuthenticationError } from "../errors/errors";
 import { getErrorMessage, getErrorCode } from "../utils/errorUtils";
 
 /**
- * Middleware that authenticates requests using a Firebase ID token.
- * - Extracts Bearer token from the Authorization header
- * - Verifies the token with Firebase Admin
- * - Stores user id and role in res.locals for downstream usage
+ * Verifies Firebase ID token and attaches user context to `response.locals`.
+ *
+ * Expected header: `Authorization: Bearer <token>`
+ * On success:
+ * - `response.locals.uid` is set to the user's UID.
+ * - `response.locals.role` is set from custom claims if present.
+ *
+ * @param request - Express request.
+ * @param response - Express response.
+ * @param nextFunction - Next middleware.
  */
 const authenticate = async (
   request: Request,
