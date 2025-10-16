@@ -4,6 +4,6 @@
  * @param allowSameUser - Whether a user can access their own resource (matching :id)
  */
 export interface AuthorizationOptions {
-  hasRole: Array<"admin" | "officer" | "analyst" | "user">;
+  hasRole: Array<"admin" | "officer" | "manager" | "user">;
   allowSameUser?: boolean;
 }
