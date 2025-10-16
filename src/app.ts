@@ -48,14 +48,9 @@ app.get("/api/v1/health", (_req: Request, res: Response) => {
 
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/admin", adminRoutes);
-
-// NOTE: add loans when ready:
-// import loanRoutes from "./api/v1/routes/loanRoutes";
-// app.use("/api/v1/loans", loanRoutes);
+app.use("/api/v1/loans", loanRoutes);
 
 // 4) Global error handler (MUST be last)
 app.use(errorHandler);
-
-app.use("/api/v1/loans", loanRoutes);
 
 export default app;

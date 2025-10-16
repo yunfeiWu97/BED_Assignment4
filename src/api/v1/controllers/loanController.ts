@@ -114,6 +114,44 @@ export const updateLoan = async (
 };
 
 /**
+ * Reviews a specific loan application (assignment hardcoded stub).
+ * Role: officer
+ */
+export const reviewLoan = async (
+  request: Request,
+  response: Response,
+  _next: NextFunction
+): Promise<void> => {
+  const { id } = request.params;
+
+  response.status(HTTP_STATUS.OK).json(
+    successResponse(
+      { id, reviewed: true },
+      "Loan application reviewed (hardcoded response)."
+    )
+  );
+};
+
+/**
+ * Approves a specific loan application (assignment hardcoded stub).
+ * Role: manager
+ */
+export const approveLoan = async (
+  request: Request,
+  response: Response,
+  _next: NextFunction
+): Promise<void> => {
+  const { id } = request.params;
+
+  response.status(HTTP_STATUS.OK).json(
+    successResponse(
+      { id, approved: true },
+      "Loan application approved (hardcoded response)."
+    )
+  );
+};
+
+/**
  * Delete a loan (hardcoded for assignment scaffolding).
  * Role: admin.
  */

@@ -1,38 +1,40 @@
 import { Request, Response, NextFunction } from "express";
-import { AuthorizationOptions } from "../models/authorizationOptions";
-import { MiddlewareFunction } from "../types/express";
+import { AuthorizationOptions, Role } from "../models/authorizationOptions";
 import { AuthorizationError } from "../errors/errors";
 
 /**
- * Factory that returns a middleware to enforce role-based access control.
- * Supports:
- * - Role allowlist
- * - Optional same-user access when route has :id
+ * Role-based authorization middleware.
+ * Usage: authorize({ hasRole: ["manager"], allowSameUser: true })
  */
-const isAuthorized = (options: AuthorizationOptions): MiddlewareFunction => {
-  return (request: Request, response: Response, nextFunction: NextFunction): void => {
+const authorize = (authOptions: AuthorizationOptions) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     try {
-      const userRole: string | undefined = response.locals.role;
-      const userIdFromToken: string | undefined = response.locals.uid;
-      const resourceIdFromRoute: string | undefined = request.params?.id;
+      const role: Role | undefined = res.locals.role;
+      const uid: string | undefined = res.locals.uid;
+      const { id } = req.params;
 
-      if (options.allowSameUser && resourceIdFromRoute && userIdFromToken === resourceIdFromRoute) {
-        return nextFunction();
+      // 1) allowSameUser: if true and :id 
+      if (authOptions.allowSameUser && id && uid && id === uid) {
+        return next();
       }
-
-      if (!userRole) {
+      
+      // 2) no role => forbidden
+      if (!role) {
         throw new AuthorizationError("Forbidden: No role found", "ROLE_NOT_FOUND");
       }
-
-      if (options.hasRole.includes(userRole as AuthorizationOptions["hasRole"][number])) {
-        return nextFunction();
+      
+      // 3) if hasRole is not provided, any authenticated user is considered
+      const allowed = authOptions.hasRole;
+      if (!allowed || allowed.length === 0 || allowed.includes(role)) {
+        return next();
       }
-
+      
+      // 4) insufficient role
       throw new AuthorizationError("Forbidden: Insufficient role", "INSUFFICIENT_ROLE");
-    } catch (unknownError: unknown) {
-      nextFunction(unknownError);
+    } catch (error) {
+      next(error); 
     }
   };
 };
 
-export default isAuthorized;
+export default authorize;

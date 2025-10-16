@@ -1,9 +1,14 @@
 /**
- * Authorization options used by the role-based authorization middleware.
- * @param hasRole - Allowed roles for this route
- * @param allowSameUser - Whether a user can access their own resource (matching :id)
+ * Supported roles for this assignment.
+ */
+export type Role = "admin" | "officer" | "manager" | "user";
+
+/**
+ * Options for the authorize() middleware.
+ * - hasRole: list of allowed roles; if omitted, treat as "any authenticated user"
+ * - allowSameUser: when true, user can access their own resource if :id === res.locals.uid
  */
 export interface AuthorizationOptions {
-  hasRole: Array<"admin" | "officer" | "manager" | "user">;
+  hasRole?: Role[];
   allowSameUser?: boolean;
 }

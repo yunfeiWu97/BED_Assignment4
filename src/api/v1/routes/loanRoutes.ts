@@ -6,6 +6,8 @@ import {
   getAllLoans,
   getLoanById,
   updateLoan,
+  reviewLoan,
+  approveLoan,
   deleteLoan,
 } from "../controllers/loanController";
 
@@ -28,8 +30,26 @@ loanRoutes.use(authenticate);
  */
 loanRoutes.post(
   "/",
-  authorize({ hasRole: ["admin", "officer"] }),
+  authorize({ hasRole: ["user"] }),
   createLoan
+);
+
+/**
+ * PUT /api/v1/loans/:id/review
+ */
+loanRoutes.put(
+  "/:id/review",
+  authorize({ hasRole: ["officer"] }),
+  reviewLoan
+);
+
+/**
+ * PUT /api/v1/loans/:id/approve
+ */
+loanRoutes.put(
+  "/:id/approve",
+  authorize({ hasRole: ["manager"] }),
+  approveLoan
 );
 
 /**
