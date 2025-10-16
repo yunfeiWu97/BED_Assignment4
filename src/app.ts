@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from "express";
 import userRoutes from "./api/v1/routes/userRoutes";
 import adminRoutes from "./api/v1/routes/adminRoutes";
 import errorHandler from "./api/v1/middleware/errorHandler";
+import loanRoutes from "./api/v1/routes/loanRoutes";
 import {
   accessLogger,
   errorLogger,
@@ -54,5 +55,7 @@ app.use("/api/v1/admin", adminRoutes);
 
 // 4) Global error handler (MUST be last)
 app.use(errorHandler);
+
+app.use("/api/v1/loans", loanRoutes);
 
 export default app;
